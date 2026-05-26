@@ -1,23 +1,104 @@
-# Repositorio criado para o trabalho de Governança de TI
+# Governança de TI — GLPI com Docker
 
-Equipe: João Laranjeira, Maria Eduarda, Davi da Silva e Daniel do Carmo
+Repositório criado para o trabalho de **Governança de TI**.
 
-Esse repositorio contem o docker compose disponivel em: https://hub.docker.com/r/glpi/glpi#how-to-use-this-image
+## Equipe
 
-Antes de dar `docker compose up -d, é necessário criar um arquivo .env`, com as variaveis de ambientes reais a serem utilizadas. O repositorio contem um .env.example, com todas as variaveis necessarias, e valores simples para cada uma delas
+- João Laranjeira
+- Maria Eduarda
+- Davi da Silva
+- Daniel do Carmo
 
-Atenção, para os proximos passos precisamos identificar os ids dos containers do GLPI e do MySQL, rodamos o comando:
+## Sobre o projeto
 
-`docker ps`
+Este repositório contém um `docker-compose.yml` baseado na imagem oficial do GLPI disponível no Docker Hub:
 
-Para localizar o id do container do mysql, por padrao, no docker compose deixei o container com o nome de `glpi_db`, entao eh so procurar por ele e achar o id. O mesmo segue para o GLPI, que deixei nomeado como glpi
+https://hub.docker.com/r/glpi/glpi#how-to-use-this-image
 
-Para configurar o suporte das timezones no GLPI, precisamos dar GRANT para o usuario `glpi (aqui vai depender de como voce configurou seu .env)` na tabela mysql.time_zone. Com o container do docker rodando, execute o seguinte comando no terminal:
+## Configuração inicial
 
-Aqui vamos usar o id do container do MySQL
-docker exec -it <db_container_id> mysql -u root -p -e "GRANT SELECT ON mysql.time_zone_name TO '<usuario do banco configurado no .env>'@'%';FLUSH PRIVILEGES;"
+Antes de executar o Docker Compose, é necessário criar um arquivo `.env` com as variáveis de ambiente reais que serão utilizadas.
 
-Depois disso, é só rodar:
+O repositório contém um arquivo `.env.example` com todas as variáveis necessárias e valores simples de exemplo.
 
-Aqui vamos usar o id do container do GLPI
+Crie o arquivo `.env` com base no exemplo:
+
+```bash
+cp .env.example .env
+```
+
+Depois, edite o arquivo `.env` conforme necessário.
+
+## Subindo os containers
+
+Após configurar o arquivo `.env`, execute:
+
+```bash
+docker compose up -d
+```
+
+## Identificando os containers
+
+Para os próximos passos, será necessário identificar os IDs dos containers do GLPI e do MySQL.
+
+Execute:
+
+```bash
+docker ps
+```
+
+Por padrão, no `docker-compose.yml`:
+
+- O container do MySQL foi nomeado como `glpi_db`
+- O container do GLPI foi nomeado como `glpi`
+
+Localize esses containers na saída do comando `docker ps` e copie seus respectivos IDs.
+
+## Configurando suporte a timezones no GLPI
+
+Para configurar o suporte a timezones no GLPI, é necessário conceder permissão ao usuário do banco de dados na tabela `mysql.time_zone_name`.
+
+> O usuário do banco depende do valor configurado no arquivo `.env`.
+
+Com os containers rodando, execute o comando abaixo usando o ID do container do MySQL:
+
+```bash
+docker exec -it <db_container_id> mysql -u root -p -e "GRANT SELECT ON mysql.time_zone_name TO '<usuario_do_banco_configurado_no_env>'@'%'; FLUSH PRIVILEGES;"
+```
+
+Substitua:
+
+- `<db_container_id>` pelo ID do container MySQL
+- `<usuario_do_banco_configurado_no_env>` pelo usuário configurado no `.env`
+
+## Habilitando timezones no GLPI
+
+Depois de conceder a permissão no banco, execute o comando abaixo usando o ID do container do GLPI:
+
+```bash
 docker exec -it <glpi_container_id> /var/www/glpi/bin/console database:enable_timezones
+```
+
+Substitua:
+
+- `<glpi_container_id>` pelo ID do container GLPI
+
+## Resumo dos comandos principais
+
+```bash
+cp .env.example .env
+docker compose up -d
+docker ps
+```
+
+Comando para configurar permissão no MySQL:
+
+```bash
+docker exec -it <db_container_id> mysql -u root -p -e "GRANT SELECT ON mysql.time_zone_name TO '<usuario_do_banco_configurado_no_env>'@'%'; FLUSH PRIVILEGES;"
+```
+
+Comando para habilitar timezones no GLPI:
+
+```bash
+docker exec -it <glpi_container_id> /var/www/glpi/bin/console database:enable_timezones
+```
